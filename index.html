@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href='https://fonts.googleapis.com/css?family=Montserrat' rel='stylesheet'>
+  <title>Che atleta sei?</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      min-height: 100%;
+      margin: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      background: #FFFFFF;
+      color: #000000;
+      font-family: 'Montserrat';
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow-x: hidden;
+    }
+
+    .quiz {
+      width: min(100% - 40px, 700px);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 0;
+    }
+
+    .screen {
+      width: 100%;
+      animation: appear 0.25s ease;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .question-number {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 17px;
+      height: 17px;
+      margin-right: 9px;
+      border-radius: 4px;
+      background: #ffffff;
+      color: #000000;
+      font-size: 11px;
+      font-weight: bold;
+      vertical-align: 2px;
+    }
+
+    .question {
+      margin: 0 0 38px;
+      font-size: 25px;
+      line-height: 1.35;
+      font-weight: 400;
+    }
+
+    .answers {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .answer {
+      width: 100%;
+      min-height: 47px;
+      padding: 8px 14px 8px 10px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 24px;
+      background: rgba(255, 255, 255, 0.025);
+      color: #000000;
+      font-family: inherit;
+      font-size: 17px;
+      line-height: 1.35;
+      text-align: left;
+      cursor: pointer;
+      transition:
+        background 0.15s ease,
+        border-color 0.15s ease,
+        transform 0.15s ease;
+    }
+
+    .answer:hover {
+      background: rgba(255, 255, 255, 0.09);
+      border-color: rgba(255, 255, 255, 0.28);
+    }
+
+    .answer:active {
+      transform: scale(0.995);
+    }
+
+    .answer.selected {
+      background: rgba(255, 255, 255, 0.13);
+      border-color: rgba(255, 255, 255, 0.65);
+    }
+
+    .letter {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 25px;
+      height: 25px;
+      margin-right: 9px;
+      border: 1px solid rgba(255, 255, 255, 0.55);
+      border-radius: 50%;
+      font-size: 12px;
+      font-weight: bold;
+      flex-shrink: 0;
+      vertical-align: middle;
+    }
+
+    .next-row {
+      display: flex;
+      justify-content: flex-start;
+      margin-top: 30px;
+    }
+
+    .next-button,
+    .restart-button {
+      width: 54px;
+      height: 42px;
+      border: 0;
+      border-radius: 24px;
+      background: #ffffff;
+      color: #1D67D1;
+      font-family: inherit;
+      font-size: 25px;
+      line-height: 1;
+      cursor: pointer;
+      transition: transform 0.15s ease, opacity 0.15s ease;
+    }
+
+    .next-button:hover:not(:disabled),
+    .restart-button:hover {
+      transform: translateX(2px);
+    }
+
+    .next-button:disabled {
+      opacity: 0.45;
+      cursor: default;
+    }
+
+    /* Schermata iniziale */
+    .intro {
+      text-align: center;
+    }
+
+    .intro h1 {
+      margin: 0 0 18px;
+      font-size: 38px;
+      font-weight: 500;
+      line-height: 1.15;
+    }
+
+    .intro p {
+      margin: 0 auto 32px;
+      max-width: 520px;
+      font-size: 18px;
+      line-height: 1.5;
+    }
+
+    .start-button {
+      border: 0;
+      border-radius: 24px;
+      padding: 11px 24px;
+      background: #ffffff;
+      color: #1D67D1;
+      font-family: inherit;
+      font-size: 17px;
+      cursor: pointer;
+    }
+
+    /* Risultato */
+    .result {
+      text-align: center;
+    }
+
+    .result-small {
+      margin-bottom: 12px;
+      font-size: 17px;
+    }
+
+    .result-letter {
+      margin: 0 0 10px;
+      font-size: 58px;
+      line-height: 1;
+      font-weight: 500;
+    }
+
+    .result-title {
+      margin: 0 0 10px;
+      font-size: 30px;
+      line-height: 1.2;
+      font-weight: 500;
+    }
+
+    .result-subtitle {
+      margin: 0 auto 26px;
+      max-width: 580px;
+      font-size: 20px;
+      line-height: 1.45;
+    }
+
+    .result-description {
+      margin: 0 auto 32px;
+      max-width: 560px;
+      font-size: 17px;
+      line-height: 1.55;
+    }
+
+    .restart-button {
+      width: auto;
+      height: auto;
+      padding: 11px 22px;
+      font-size: 17px;
+    }
+
+    .progress {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: rgba(255, 255, 255, 0.18);
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 20%;
+      background: #1D67D1;
+      transition: width 0.25s ease;
+    }
+
+    @keyframes appear {
+      from {
+        opacity: 0;
+        transform: translateY(5px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 600px) {
+      .quiz {
+        width: min(100% - 28px, 700px);
+        padding: 28px 0;
+      }
+
+      .question {
+        margin-bottom: 28px;
+        font-size: 21px;
+      }
+
+      .answer {
+        font-size: 16px;
+        min-height: 50px;
+      }
+
+      .intro h1 {
+        font-size: 31px;
+      }
+
+      .result-title {
+        font-size: 27px;
+      }
+
+      .result-subtitle {
+        font-size: 18px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="progress">
+    <div class="progress-bar" id="progressBar"></div>
+  </div>
+
+  <main class="quiz">
+
+    <!-- INTRO -->
+    <section class="screen intro" id="introScreen">
+      <h1>Cosa vuoi fare da grande?</h1>
+      <p>
+        5 domande per scoprire quale professione sognavi da bambin* e cosa comporta oggi.
+      </p>
+      <button class="start-button" id="startButton">Inizia →</button>
+    </section>
+
+    <!-- DOMANDA -->
+    <section class="screen hidden" id="questionScreen">
+      <p class="question" id="questionText"></p>
+
+      <div class="answers" id="answers"></div>
+
+      <div class="next-row">
+        <button class="next-button" id="nextButton" disabled aria-label="Prossima domanda">›</button>
+      </div>
+    </section>
+
+    <!-- RISULTATO -->
+    <section class="screen result hidden" id="resultScreen">
+      <p class="result-small">Il tuo risultato è...</p>
+      <div class="result-letter" id="resultLetter"></div>
+      <h2 class="result-title" id="resultTitle"></h2>
+      <p class="result-subtitle" id="resultSubtitle"></p>
+      <p class="result-description" id="resultDescription"></p>
+      <button class="restart-button" id="restartButton">Rifai il quiz</button>
+    </section>
+
+  </main>
+
+  <script>
+    const questions = [
+      {
+        question: "É sabato sera: dove ti trovi?",
+        answers: [
+          ["A", "A guardare un documentario assurdo, ad un evento fuori città o a pianificare il prossimo viaggio  "],
+          ["B", "Ad una cena tranquilla con gli amici più stretti "],
+          ["C", "In mezzo alla folla, a ballare ad un concerto, o allo stadio a fare casino in compagnia "],
+          ["D", "Ad un gioco da tavolo o un escape room o ad intavolare discussioni filosofiche su come risolvere i problemi del mondo  "]
+        ]
+      },
+      {
+        question: "Se a scuola ci fosse stata una materia a scelta libera, avresti voluto:",
+        answers: [
+          ["A", "Esplorazione e sopravvivenza: come viaggiare low-cost nello spazio o nel mondo "],
+          ["B", "Primo soccorso e cura del pianeta: come salvare persone, animali ed ecosistemi "],
+          ["C", "Carisma da palcoscenico: parlare in pubblico, vincere sotto pressione e fare spettacolo "],
+          ["D", "Laboratorio di idee: smontare cose, inventare app o insegnare agli altri "]
+        ]
+      },
+      {
+        question: "In un lavoro di gruppo tu sei quello/a che? ",
+        answers: [
+          ["A", "Butta lì le idee più pazze e visionarie che inizialmente sembrano impossibili"],
+          ["B", "Si assicura che tutti vadano d'accordo e che nessuno rimanga escluso o sotto stress"],
+          ["C", "Dà la carica al team, tiene alto il morale ed è pronto/a a presentare il progetto davanti a tutti "],
+          ["D", "Oorganizza il piano d'azione, controlla che tutto quadri e spiega le parti difficili"]
+        ]
+      },
+      {
+        question: "Se vincessi un biglietto di sola andata, la tua meta ideale sarebbe:  ",
+        answers: [
+          ["A", "Il posto più sperduto o inesplorato dell'Islanda (o direttamente Marte)"],
+          ["B", "Una riserva naturale o un centro di recupero per animali selvatici in mezzo al verde"],
+          ["C", "Il centro pulsante di New York, Londra o Tokyo, tra luci, palchi ed eventi"],
+          ["D", "Una città universitaria ricca di musei, laboratori, biblioteche e storie"]
+        ]
+      },
+      {
+        question: "Il superpotere che vorresti avere è?  ",
+        answers: [
+          ["A", "A) teletrasporto istantaneo, nessun confine può fermarti "],
+          ["B", "B) guarigione immediata per qualsiasi essere vivente "],
+          ["C", "C) super energia contagiosa: trasformare la fatica di tutti in entusiasmo vincente "],
+          ["D", "D) conoscenza istantanea: capire al volo qualsiasi problema e trovare la soluzione "]
+        ]
+      }
+    ];
+
+    const results = {
+      A: {
+        title: "L'ASTRONAUTA",
+        subtitle: "L'esplorator* inarrestabile",
+        description: "Da piccolo/a eri il/la bambino/a che bendava i peluche e portava a casa ogni gattino o cagnolino del quartiere. Empatia al 100%, il tuo motore è fare del bene, prenderti cura degli altri o salvaguardare il pianeta e l'ambiente.",
+        // extra: '📝 Adesivo: RIORDINA LE TUE IDEE'
+      },
+      B: {
+        title: "IL/ LA VETERINARIO/A ",
+        subtitle: "---",
+        description: "Non sai esattamente dove stai andando, ma in qualche modo trovi sempre il modo di arrivarci. Il futuro? Ci penserai quando sarà il momento. Nel frattempo, una domanda non fa mai male: cosa vuoi fare da grande?",
+        // extra: "🛹 Adesivo: COSA VUOI FARE DA GRANDE?"
+      },
+      C: {
+        title: " IL/LA CALCIATORE/ CALCIATRICE",
+        subtitle: "---",
+        description: "Da piccolo/a eri il/la bambino/a che improvvisava concerti col telecomando o trasformava il corridoio di casa e il cortile in una finale di Champions League. Energia pura,spirito di squadra e voglia di esprimerti al massimo. Ti piacciono le sfide dinamiche, lavorare in team o metterti in gioco in ambiti creativi, sportivi e manageriali.",
+        // extra: "🤖 L’IA NON HA TUTTE LE RISPOSTE"
+      },
+      D: {
+        title: "IL/LA MAESTRO/ MAESTRA",
+        subtitle: "Inventiva al primo posto",
+        description: "Da piccolo/a eri il/la bambino/a che spiegava le cose a tutti alla lavagna a gessetti o smontava i giocattoli per vedere cosa c'era dentro. Sei uno spirito critico e  hai voglia di capire come funzionano le cose e di trasmetterle al mondo. Ami la comunicazione, l'insegnamento, la tecnologia o il problem solving.",
+        // extra: "🌊 Adesivo: COSA VUOI FARE DA GRANDE?"
+      }
+    };
+
+    let currentQuestion = 0;
+    let selectedAnswer = null;
+    let scores = {
+      A: 0,
+      B: 0,
+      C: 0,
+      D: 0
+    };
+
+    const introScreen = document.getElementById('introScreen');
+    const questionScreen = document.getElementById('questionScreen');
+    const resultScreen = document.getElementById('resultScreen');
+
+    const questionText = document.getElementById('questionText');
+    const answersContainer = document.getElementById('answers');
+    const nextButton = document.getElementById('nextButton');
+
+    const progressBar = document.getElementById('progressBar');
+
+    const resultLetter = document.getElementById('resultLetter');
+    const resultTitle = document.getElementById('resultTitle');
+    const resultSubtitle = document.getElementById('resultSubtitle');
+    const resultDescription = document.getElementById('resultDescription');
+
+    document.getElementById('startButton').addEventListener('click', startQuiz);
+    nextButton.addEventListener('click', nextQuestion);
+    document.getElementById('restartButton').addEventListener('click', restartQuiz);
+
+    function startQuiz() {
+      introScreen.classList.add('hidden');
+      questionScreen.classList.remove('hidden');
+
+      currentQuestion = 0;
+      selectedAnswer = null;
+      scores = { A: 0, B: 0, C: 0, D: 0 };
+
+      showQuestion();
+    }
+
+    function showQuestion() {
+      selectedAnswer = null;
+      nextButton.disabled = true;
+
+      const question = questions[currentQuestion];
+
+      questionText.innerHTML =
+        '<span class="question-number">' +
+        (currentQuestion + 1) +
+        '</span>' +
+        question.question;
+
+      answersContainer.innerHTML = '';
+
+      question.answers.forEach(([letter, text]) => {
+        const button = document.createElement('button');
+        button.className = 'answer';
+        button.type = 'button';
+        button.innerHTML =
+          '<span class="letter">' + letter + '</span>' +
+          text;
+
+        button.addEventListener('click', () => selectAnswer(letter, button));
+
+        answersContainer.appendChild(button);
+      });
+
+      progressBar.style.width =
+        ((currentQuestion + 1) / questions.length) * 100 + '%';
+    }
+
+    function selectAnswer(letter, button) {
+      document.querySelectorAll('.answer').forEach(answer => {
+        answer.classList.remove('selected');
+      });
+
+      button.classList.add('selected');
+      selectedAnswer = letter;
+      nextButton.disabled = false;
+    }
+
+    function nextQuestion() {
+      if (!selectedAnswer) return;
+
+      scores[selectedAnswer]++;
+
+      currentQuestion++;
+
+      if (currentQuestion < questions.length) {
+        showQuestion();
+      } else {
+        showResult();
+      }
+    }
+
+    function showResult() {
+      questionScreen.classList.add('hidden');
+      resultScreen.classList.remove('hidden');
+
+      progressBar.style.width = '100%';
+
+      const highestScore = Math.max(...Object.values(scores));
+
+      const winners = Object.keys(scores).filter(
+        letter => scores[letter] === highestScore
+      );
+
+      // In caso di parità, viene mostrato il primo risultato tra quelli a pari merito.
+      const winner = winners[0];
+      const result = results[winner];
+
+      resultLetter.textContent = winner;
+      resultTitle.textContent = result.title;
+      resultSubtitle.textContent = result.subtitle;
+      resultDescription.textContent =
+        result.description + ' ' + result.extra;
+    }
+
+    function restartQuiz() {
+      resultScreen.classList.add('hidden');
+      questionScreen.classList.remove('hidden');
+
+      currentQuestion = 0;
+      selectedAnswer = null;
+      scores = { A: 0, B: 0, C: 0, D: 0 };
+
+      showQuestion();
+    }
+  </script>
+
+</body>
+</html>
